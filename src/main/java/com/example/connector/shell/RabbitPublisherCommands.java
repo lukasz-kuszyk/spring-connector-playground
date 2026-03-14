@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component;
 import com.example.connector.config.RabbitConfig;
 
 @Component
-public class PublisherCommands {
+public class RabbitPublisherCommands {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public PublisherCommands(RabbitTemplate rabbitTemplate) {
+    public RabbitPublisherCommands(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }
 
@@ -20,6 +20,7 @@ public class PublisherCommands {
         String message = "Hello from RabbitMQ";
 
         rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE_NAME, RabbitConfig.ROUTING_KEY, message);
+
         return "Published: " + message;
     }
 }

@@ -12,14 +12,14 @@ import org.springframework.stereotype.Component;
 import com.example.connector.config.RabbitConfig;
 
 @Component
-public class ConsumerCommands {
+public class RabbitConsumerCommands {
 
     private final ConnectionFactory connectionFactory;
     private final Queue connectorQueue;
 
     private SimpleMessageListenerContainer container;
 
-    public ConsumerCommands(ConnectionFactory connectionFactory, Queue connectorQueue) {
+    public RabbitConsumerCommands(ConnectionFactory connectionFactory, Queue connectorQueue) {
         this.connectionFactory = connectionFactory;
         this.connectorQueue = connectorQueue;
     }
@@ -36,6 +36,7 @@ public class ConsumerCommands {
             System.out.println("Received: " + body);
         });
         container.start();
+
         return "Consumer started. Listening on queue '" + RabbitConfig.QUEUE_NAME + "'. Run 'rabbit-consumer-stop' to stop.";
     }
 
@@ -45,6 +46,7 @@ public class ConsumerCommands {
             return "Consumer is not running.";
         }
         container.stop();
+
         return "Consumer stopped.";
     }
 
@@ -65,6 +67,7 @@ public class ConsumerCommands {
         } finally {
             consumeContainer.stop();
         }
+
         return "Stopped.";
     }
 }

@@ -24,9 +24,40 @@ mvnw.cmd spring-boot:run
 On startup:
 
 1. Spring Boot starts
-2. Docker Compose brings up RabbitMQ (port 5672)
+2. Docker Compose brings up RabbitMQ (port 5672) and Azure Service Bus emulator (port 5673)
 3. RabbitAdmin declares the exchange `connector.exchange` and queue `connector.queue`
 4. The Spring Shell prompt appears
+
+### Azure Service Bus Emulator
+
+The [Azure Service Bus emulator](https://learn.microsoft.com/en-us/azure/service-bus-messaging/test-locally-with-service-bus-emulator) runs alongside RabbitMQ:
+
+- **AMQP port**: 5673 (host) → 5672 (container) — avoids conflict with RabbitMQ on 5672
+- **Management API**: http://localhost:5300
+- **Pre-configured**: topic `playground-topic` with subscription `playground-subscription` (namespace `sbemulatorns`)
+
+Connection string for local development:
+
+```
+Endpoint=sb://localhost:5673;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
+```
+
+For management operations, use port 5300:
+
+```
+Endpoint=sb://localhost:5300;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
+```
+
+Config: `servicebus/config.json`
+
+Shell commands:
+
+```
+servicebus-publish              # Publish test message to playground-topic
+servicebus-consumer-start       # Start consumer (background)
+servicebus-consumer-stop        # Stop consumer
+servicebus-consumer-consume     # Consume until Ctrl+C
+```
 
 ### 2. Use the shell
 
@@ -38,7 +69,7 @@ rabbit-consumer-start
 
 This starts the RabbitMQ consumer in the background. Messages received on `connector.queue` are printed to the console. Run `rabbit-consumer-stop` to stop it. You can run other commands (e.g. `rabbit-publish`) while the consumer is running.
 
-Alternatively, run `rabbit-consumer-consume` to consume messages in the foreground until you press **Ctrl+C**.
+Alternatively, run `rabbit-consumer-consume` (same as start; use `rabbit-consumer-stop` for graceful stop).
 
 ### 3. Send test messages
 
