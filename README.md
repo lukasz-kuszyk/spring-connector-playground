@@ -33,14 +33,22 @@ On startup:
 When the shell is ready, run:
 
 ```
-start-consumer
+rabbit-consumer-start
 ```
 
-This starts the RabbitMQ consumer and blocks until you press **Ctrl+C**. Messages received on `connector.queue` are printed to the console.
+This starts the RabbitMQ consumer in the background. Messages received on `connector.queue` are printed to the console. Run `rabbit-consumer-stop` to stop it. You can run other commands (e.g. `rabbit-publish`) while the consumer is running.
+
+Alternatively, run `rabbit-consumer-consume` to consume messages in the foreground until you press **Ctrl+C**.
 
 ### 3. Send test messages
 
-In another terminal, publish messages to RabbitMQ:
+From the same shell (while the consumer is running), run:
+
+```
+rabbit-publish
+```
+
+Or from another terminal, publish messages to RabbitMQ:
 
 ```bash
 # Using RabbitMQ Management HTTP API (requires curl)
