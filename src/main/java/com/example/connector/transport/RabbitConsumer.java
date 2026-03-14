@@ -2,50 +2,40 @@ package com.example.connector.transport;
 
 import java.util.concurrent.CountDownLatch;
 
-import com.example.connector.config.RabbitConfig;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RabbitConsumer implements MessageConsumer {
 
-    private final ConnectionFactory connectionFactory;
-    private final Queue connectorQueue;
+    private final RabbitListenerFactory listenerFactory;
 
     private SimpleMessageListenerContainer container;
 
-    public RabbitConsumer(ConnectionFactory connectionFactory, Queue connectorQueue) {
-        this.connectionFactory = connectionFactory;
-        this.connectorQueue = connectorQueue;
+    public RabbitConsumer(RabbitListenerFactory listenerFactory) {
+        this.listenerFactory = listenerFactory;
     }
 
-    @Override
-    public String start() {
+    public String start(MessageHandler handler) {
         if (container != null && container.isRunning()) {
-            return "Consumer is already running.";
+            return "already_running";
         }
-        container = createContainer();
+        container = listenerFactory.create(handler);
         container.start();
-        return "Consumer started. Listening on queue '" + RabbitConfig.QUEUE_NAME + "'. Run 'rabbit-consumer-stop' to stop.";
+        return "started";
     }
 
-    @Override
     public String stop() {
         if (container == null || !container.isRunning()) {
-            return "Consumer is not running.";
+            return "not_running";
         }
         container.stop();
-        return "Consumer stopped.";
+        return "stopped";
     }
 
-    @Override
-    public String consume() {
-        var consumeContainer = createContainer();
+    public String consume(MessageHandler handler) {
+        var consumeContainer = listenerFactory.create(handler);
         consumeContainer.start();
-        System.out.println("Consuming from queue '" + RabbitConfig.QUEUE_NAME + "'. Press Ctrl+C to stop.");
         try {
             new CountDownLatch(1).await();
         } catch (InterruptedException e) {
@@ -53,16 +43,6 @@ public class RabbitConsumer implements MessageConsumer {
         } finally {
             consumeContainer.stop();
         }
-        return "Stopped.";
-    }
-
-    private SimpleMessageListenerContainer createContainer() {
-        var c = new SimpleMessageListenerContainer(connectionFactory);
-        c.setQueues(connectorQueue);
-        c.setMessageListener((Message message) -> {
-            var body = new String(message.getBody());
-            System.out.println("Received: " + body);
-        });
-        return c;
+        return "stopped";
     }
 }

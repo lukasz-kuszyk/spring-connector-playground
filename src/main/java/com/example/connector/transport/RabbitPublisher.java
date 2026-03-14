@@ -14,8 +14,7 @@ public class RabbitPublisher implements MessagePublisher {
     }
 
     @Override
-    public String publish(String message) {
+    public void publish(String message) {
         rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE_NAME, RabbitConfig.ROUTING_KEY, message);
-        return "Published to RabbitMQ: " + message;
     }
 }

@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class RabbitPublisherCommands {
 
+    private static final String MESSAGE = "Hello from RabbitMQ";
+
     private final RabbitPublisher rabbitPublisher;
 
     public RabbitPublisherCommands(RabbitPublisher rabbitPublisher) {
@@ -15,6 +17,7 @@ public class RabbitPublisherCommands {
 
     @Command(name = "rabbit-publish", description = "Publish a message to connector.queue")
     public String publish() {
-        return rabbitPublisher.publish("Hello from RabbitMQ");
+        rabbitPublisher.publish(MESSAGE);
+        return "Published: " + MESSAGE;
     }
 }

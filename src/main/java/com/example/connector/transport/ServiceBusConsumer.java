@@ -2,55 +2,45 @@ package com.example.connector.transport;
 
 import java.util.concurrent.CountDownLatch;
 
-import com.azure.messaging.servicebus.ServiceBusClientBuilder;
-import com.azure.messaging.servicebus.ServiceBusErrorContext;
 import com.azure.messaging.servicebus.ServiceBusProcessorClient;
-import com.azure.messaging.servicebus.ServiceBusReceivedMessageContext;
-import com.azure.messaging.servicebus.models.ServiceBusReceiveMode;
-import com.example.connector.config.ServiceBusConfig;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ServiceBusConsumer implements MessageConsumer {
 
-    private final ServiceBusConfig serviceBusConfig;
+    private final ServiceBusProcessorFactory processorFactory;
 
     private ServiceBusProcessorClient processorClient;
 
-    public ServiceBusConsumer(ServiceBusConfig serviceBusConfig) {
-        this.serviceBusConfig = serviceBusConfig;
+    public ServiceBusConsumer(ServiceBusProcessorFactory processorFactory) {
+        this.processorFactory = processorFactory;
     }
 
     @Override
-    public String start() {
+    public String start(MessageHandler handler) {
         if (processorClient != null && processorClient.isRunning()) {
-            return "Consumer is already running.";
+            return "already_running";
         }
-        processorClient = createProcessorClient();
+        processorClient = processorFactory.create(handler);
         processorClient.start();
-        return "Consumer started. Listening on topic '" + serviceBusConfig.getTopicName()
-                + "' subscription '" + serviceBusConfig.getSubscriptionName()
-                + "'. Run 'servicebus-consumer-stop' to stop.";
+        return "started";
     }
 
     @Override
     public String stop() {
         if (processorClient == null || !processorClient.isRunning()) {
-            return "Consumer is not running.";
+            return "not_running";
         }
         processorClient.stop();
         processorClient.close();
         processorClient = null;
-        return "Consumer stopped.";
+        return "stopped";
     }
 
     @Override
-    public String consume() {
-        var consumeProcessor = createProcessorClient();
+    public String consume(MessageHandler handler) {
+        var consumeProcessor = processorFactory.create(handler);
         consumeProcessor.start();
-        System.out.println("Consuming from topic '" + serviceBusConfig.getTopicName()
-                + "' subscription '" + serviceBusConfig.getSubscriptionName()
-                + "'. Press Ctrl+C to stop.");
         try {
             new CountDownLatch(1).await();
         } catch (InterruptedException e) {
@@ -59,28 +49,6 @@ public class ServiceBusConsumer implements MessageConsumer {
             consumeProcessor.stop();
             consumeProcessor.close();
         }
-        return "Stopped.";
-    }
-
-    private ServiceBusProcessorClient createProcessorClient() {
-        return new ServiceBusClientBuilder()
-                .connectionString(serviceBusConfig.getConnectionString())
-                .processor()
-                .topicName(serviceBusConfig.getTopicName())
-                .subscriptionName(serviceBusConfig.getSubscriptionName())
-                .receiveMode(ServiceBusReceiveMode.RECEIVE_AND_DELETE)
-                .processMessage(this::processMessage)
-                .processError(this::processError)
-                .buildProcessorClient();
-    }
-
-    private void processMessage(ServiceBusReceivedMessageContext context) {
-        var message = context.getMessage();
-        var body = message.getBody() != null ? new String(message.getBody().toBytes()) : "";
-        System.out.println("Received: " + body);
-    }
-
-    private void processError(ServiceBusErrorContext context) {
-        System.err.println("Error: " + context.getException().getMessage());
+        return "stopped";
     }
 }

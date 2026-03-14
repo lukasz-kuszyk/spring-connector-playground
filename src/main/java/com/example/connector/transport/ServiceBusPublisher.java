@@ -16,15 +16,13 @@ public class ServiceBusPublisher implements MessagePublisher {
     }
 
     @Override
-    public String publish(String message) {
+    public void publish(String message) {
         try (ServiceBusSenderClient sender = new ServiceBusClientBuilder()
                 .connectionString(serviceBusConfig.getConnectionString())
                 .sender()
                 .topicName(serviceBusConfig.getTopicName())
                 .buildClient()) {
-
             sender.sendMessage(new ServiceBusMessage(message));
-            return "Published to topic '" + serviceBusConfig.getTopicName() + "': " + message;
         }
     }
 }

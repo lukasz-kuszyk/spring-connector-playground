@@ -2,9 +2,9 @@ package com.example.connector.transport;
 
 /**
  * Publishes messages to a transport (e.g. RabbitMQ, Service Bus).
- * Implementations receive a message and pass it to the appropriate transport.
+ * Pure I/O - no user-facing output. Commands are responsible for informing the user.
  */
 public interface MessagePublisher {
 
-    String publish(String message);
+    void publish(String message);
 }
