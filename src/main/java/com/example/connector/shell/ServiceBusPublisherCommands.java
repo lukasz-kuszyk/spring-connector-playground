@@ -19,7 +19,7 @@ public class ServiceBusPublisherCommands {
     }
 
     @Command(name = "servicebus-publish", description = "Publish a message to the configured Service Bus topic")
-    public String publish() {
+    public String servicebusPublish() {
         serviceBusPublisher.publish(MESSAGE);
         return "Published to topic '" + serviceBusConfig.getTopicName() + "': " + MESSAGE;
     }

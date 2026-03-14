@@ -16,7 +16,7 @@ public class RabbitPublisherCommands {
     }
 
     @Command(name = "rabbit-publish", description = "Publish a message to connector.queue")
-    public String publish() {
+    public String rabbitPublish() {
         rabbitPublisher.publish(MESSAGE);
         return "Published: " + MESSAGE;
     }
